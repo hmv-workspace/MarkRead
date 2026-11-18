@@ -13,7 +13,7 @@ A lightweight, browser-based Markdown reader. Open the page, choose a folder or 
 
 ## Usage
 
-Open `index.html` in a browser, or visit the hosted version. Click **Open** in the left panel and choose **Folder** or **File(s)**.
+Open `index.html` in a browser, or visit the [hosted version](https://hmv-workspace.github.io/MarkRead/). Click **Open** in the left panel and choose **Folder** or **File(s)**.
 
 Your files are read locally in the browser and are never uploaded.
 
