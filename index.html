@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarkRead</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@18.2.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.18/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --panel: #ffffff;
+        --sidebar-bg: #f0f4f8;
+        --border: #d9e2ec;
+        --text: #1f2937;
+        --muted: #5b6472;
+        --accent: #0f6cbd;
+        --accent-soft: #eaf3ff;
+        --accent-border: #bbd7ff;
+        --code-bg: #f3f4f6;
+        --pre-bg: #111827;
+        --pre-text: #f9fafb;
+        --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      [data-theme="dark"] {
+        --bg: #0f172a;
+        --panel: #1e293b;
+        --sidebar-bg: #172033;
+        --border: #334155;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #60a5fa;
+        --accent-soft: #1e3a5f;
+        --accent-border: #2563eb;
+        --code-bg: #0b1220;
+        --pre-bg: #020617;
+        --pre-text: #e2e8f0;
+        --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      [data-theme="paper"] {
+        --bg: #ebe6d9;
+        --panel: #fdfbf4;
+        --sidebar-bg: #e4dccb;
+        --border: #d6cbb3;
+        --text: #3b3121;
+        --muted: #7a6b52;
+        --accent: #8a4b1f;
+        --accent-soft: #f3e7d3;
+        --accent-border: #d9b98c;
+        --code-bg: #f1ead8;
+        --pre-bg: #3b3121;
+        --pre-text: #fdf6e3;
+        --shadow: 0 4px 16px rgba(80, 60, 30, 0.12);
+      }
+
+      [data-theme="paper"] .markdown-body {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.05rem;
+      }
+
+      button {
+        color: var(--text);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--border);
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      .sidebar h2 {
+        margin: 0 0 16px;
+        font-size: 1.1rem;
+      }
+
+      .search {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--text);
+        margin-bottom: 16px;
+      }
+
+      .doc-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .doc-link {
+        width: 100%;
+        text-align: left;
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.92rem;
+        line-height: 1.35;
+        word-break: break-word;
+      }
+
+      .doc-link:hover,
+      .doc-link.active {
+        background: var(--accent-soft);
+        border-color: var(--accent-border);
+        color: var(--accent);
+      }
+
+      .content {
+        padding: 28px 32px 48px;
+        overflow-y: auto;
+        min-height: 0;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
+
+      .content::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .content::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .content::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 8px;
+      }
+
+      .content::-webkit-scrollbar-thumb:hover {
+        background: var(--muted);
+      }
+
+      .doc-header {
+        padding: 20px 24px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+      }
+
+      .doc-header h1 {
+        margin: 0;
+        font-size: clamp(1.75rem, 2vw, 2.5rem);
+        word-break: break-word;
+      }
+
+      .markdown-body {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 24px 28px;
+        line-height: 1.7;
+      }
+
+      .markdown-body > :first-child { margin-top: 0; }
+      .markdown-body > :last-child { margin-bottom: 0; }
+
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3,
+      .markdown-body h4 {
+        color: var(--text);
+        margin-top: 1.5em;
+        margin-bottom: 0.6em;
+      }
+
+      .markdown-body p,
+      .markdown-body ul,
+      .markdown-body ol,
+      .markdown-body blockquote,
+      .markdown-body pre {
+        margin-top: 0;
+        margin-bottom: 1em;
+      }
+
+      .markdown-body a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .markdown-body a:hover {
+        text-decoration: underline;
+      }
+
+      .markdown-body code {
+        background: var(--code-bg);
+        border-radius: 6px;
+        padding: 0.2em 0.4em;
+        font-size: 0.95em;
+      }
+
+      .markdown-body pre {
+        overflow: auto;
+        background: var(--pre-bg);
+        color: var(--pre-text);
+        padding: 16px;
+        border-radius: 10px;
+      }
+
+      .markdown-body pre code {
+        background: transparent;
+        color: inherit;
+        padding: 0;
+      }
+
+      .markdown-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1em;
+      }
+
+      .markdown-body th,
+      .markdown-body td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        text-align: left;
+      }
+
+      .markdown-body img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+
+      .file-list-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        margin-bottom: 12px;
+        padding-left: 10px;
+        direction: rtl;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
+
+      .file-list-scroll::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .file-list-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .file-list-scroll::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 8px;
+      }
+
+      .file-list-scroll::-webkit-scrollbar-thumb:hover {
+        background: var(--muted);
+      }
+
+      .file-list-scroll > * {
+        direction: ltr;
+      }
+
+      .sidebar-footer {
+        flex-shrink: 0;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      .open-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .open-row .open-menu {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .open-row .action-btn {
+        height: 30px;
+        padding: 0 10px;
+        font-size: 0.85rem;
+      }
+
+      .open-row .sidebar-toggle {
+        width: 30px;
+        height: 30px;
+      }
+
+      .sidebar-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .theme-group {
+        display: flex;
+        gap: 6px;
+        padding: 4px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel);
+      }
+
+      .theme-btn {
+        flex: 1;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+      }
+
+      .theme-btn:hover {
+        color: var(--accent);
+      }
+
+      .theme-btn.active {
+        background: var(--accent-soft);
+        border-color: var(--accent-border);
+        color: var(--accent);
+      }
+
+      .action-btn {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .open-menu {
+        position: relative;
+      }
+
+      .open-menu-list {
+        position: absolute;
+        bottom: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 6px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .open-menu-list[hidden] {
+        display: none;
+      }
+
+      .menu-item {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .menu-item:hover {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .action-btn:hover {
+        border-color: var(--accent-border);
+        color: var(--accent);
+      }
+
+      .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .sidebar-header h2 {
+        margin: 0;
+      }
+
+      .layout {
+        transition: grid-template-columns 0.2s ease;
+      }
+
+      .sidebar-toggle {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--text);
+        font-size: 1.1rem;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .sidebar-toggle:hover {
+        background: var(--accent-soft);
+        border-color: var(--accent-border);
+        color: var(--accent);
+      }
+
+      .layout.sidebar-collapsed {
+        grid-template-columns: 44px minmax(0, 1fr);
+      }
+
+      .layout.sidebar-collapsed .sidebar {
+        padding: 20px 6px;
+        overflow: hidden;
+      }
+
+      .layout.sidebar-collapsed .sidebar-header,
+      .layout.sidebar-collapsed .file-list-scroll,
+      .layout.sidebar-collapsed .search,
+      .layout.sidebar-collapsed .theme-group,
+      .layout.sidebar-collapsed .open-menu,
+      .layout.sidebar-collapsed .action-btn {
+        display: none;
+      }
+
+      .layout.sidebar-collapsed .sidebar-footer {
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .layout.sidebar-collapsed .open-row {
+        justify-content: center;
+      }
+
+      .markdown-body .mermaid {
+        margin: 1em 0;
+        text-align: center;
+        overflow: auto;
+      }
+
+      .mermaid-wrap {
+        margin: 1em 0;
+      }
+
+      .mermaid-wrap .mermaid {
+        margin: 0;
+      }
+
+      .mermaid-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 4px;
+      }
+
+      .mermaid-toolbar button {
+        min-width: 28px;
+        height: 26px;
+        padding: 0 8px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--panel);
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+
+      .mermaid-toolbar button:hover {
+        border-color: var(--accent-border);
+        color: var(--accent);
+      }
+
+      .mermaid-zoom-label {
+        min-width: 52px;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .markdown-body .mermaid.is-zoomed {
+        cursor: grab;
+      }
+
+      .markdown-body .mermaid.is-panning {
+        cursor: grabbing;
+        user-select: none;
+      }
+
+      .markdown-body .mermaid svg {
+        max-width: 100%;
+        height: auto;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+          height: auto;
+          overflow: visible;
+        }
+
+        .file-list-scroll {
+          max-height: 40vh;
+        }
+
+        .sidebar {
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .content {
+          padding: 18px 16px 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>MarkRead</h2>
+        </div>
+        <div class="file-list-scroll">
+          <ul id="fileList" class="doc-list"></ul>
+        </div>
+        <div class="sidebar-footer">
+          <input id="searchInput" class="search" type="search" placeholder="Filter files..." aria-label="Filter docs" />
+        <div class="sidebar-actions">
+          <div class="theme-group" role="group" aria-label="Theme">
+            <button type="button" class="theme-btn" data-theme-option="light" title="Light theme" aria-label="Light theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
+            <button type="button" class="theme-btn" data-theme-option="dark" title="Dark theme" aria-label="Dark theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+            <button type="button" class="theme-btn" data-theme-option="paper" title="Paper theme" aria-label="Paper theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg></button>
+          </div>
+          <input id="filePicker" type="file" accept=".md, text/markdown" multiple webkitdirectory style="display: none;" />
+          <input id="filePickerFile" type="file" accept=".md, text/markdown" multiple style="display: none;" />
+          <div class="open-row">
+          <div class="open-menu">
+            <button id="openBtn" type="button" class="action-btn" aria-haspopup="true" aria-expanded="false">Open...</button>
+            <div id="openMenu" class="open-menu-list" hidden>
+              <button id="loadFolderBtn" type="button" class="menu-item">Folder</button>
+              <button id="loadFileBtn" type="button" class="menu-item">File(s)</button>
+            </div>
+          </div>
+          <button id="toggleSidebarBtn" class="sidebar-toggle" type="button" aria-expanded="true" title="Hide files">&laquo;</button>
+          </div>
+          <button id="reopenLastBtn" type="button" class="action-btn" hidden>Reopen last selection</button>
+        </div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="doc-header" hidden>
+          <h1 id="docTitle">Loading document...</h1>
+        </header>
+        <article id="markdownView" class="markdown-body"></article>
+      </main>
+    </div>
+
+    <script>
+      const manifestPath = './markdown-files.json';
+      const fileList = document.getElementById('fileList');
+      const markdownView = document.getElementById('markdownView');
+      const docTitle = document.getElementById('docTitle');
+      const searchInput = document.getElementById('searchInput');
+      const filePicker = document.getElementById('filePicker');
+      const loadFolderBtn = document.getElementById('loadFolderBtn');
+      const filePickerFile = document.getElementById('filePickerFile');
+      const loadFileBtn = document.getElementById('loadFileBtn');
+      const openBtn = document.getElementById('openBtn');
+      const openMenu = document.getElementById('openMenu');
+      const reopenLastBtn = document.getElementById('reopenLastBtn');
+      const supportsFileSystemAccess = typeof window.showDirectoryPicker === 'function' && typeof window.showOpenFilePicker === 'function';
+      const SELECTION_DB = 'docs-markdown-viewer';
+      const SELECTION_STORE = 'selections';
+      const LAST_SELECTION_KEY = 'last';
+      const themeButtons = document.querySelectorAll('[data-theme-option]');
+      let lastDocument = null;
+      let docs = [];
+      let selectedFile = '';
+      const isLocalFileMode = location.protocol === 'file:';
+
+      const THEME_KEY = 'docs-viewer-theme';
+      const mermaidThemes = { light: 'default', dark: 'dark', paper: 'neutral' };
+
+      function applyTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+        themeButtons.forEach((button) => button.classList.toggle('active', button.dataset.themeOption === theme));
+        if (typeof mermaid !== 'undefined') {
+          mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: mermaidThemes[theme] || 'default' });
+        }
+      }
+
+      applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+
+      function getDisplayName(file) {
+        return typeof file === 'string' ? file.replace(/^.*\//, '') : (file.name || 'document.md').replace(/^.*\//, '');
+      }
+
+      function renderFileList() {
+        const query = searchInput.value.trim().toLowerCase();
+        const filteredDocs = docs.filter((file) => getDisplayName(file).toLowerCase().includes(query));
+
+        fileList.innerHTML = filteredDocs.map((file) => {
+          const label = getDisplayName(file);
+          const key = typeof file === 'string' ? file : file.name;
+          const isSelected = key === selectedFile ? 'active' : '';
+          return `
+            <li>
+              <button class="doc-link ${isSelected}" data-file="${key}">${label}</button>
+            </li>
+          `;
+        }).join('') || '<li><span style="color: var(--muted);">No files match.</span></li>';
+
+        fileList.querySelectorAll('.doc-link').forEach((button) => {
+          button.addEventListener('click', async () => {
+            const key = button.dataset.file;
+            const doc = docs.find((item) => (typeof item === 'string' ? item : item.name) === key);
+            await loadDocument(doc || key);
+          });
+        });
+      }
+
+      async function renderMermaidBlocks(container) {
+        const codeBlocks = container.querySelectorAll('pre > code.language-mermaid');
+        if (!codeBlocks.length || typeof mermaid === 'undefined') {
+          return;
+        }
+
+        const nodes = [];
+        codeBlocks.forEach((code) => {
+          const diagram = document.createElement('div');
+          diagram.className = 'mermaid';
+          diagram.textContent = code.textContent;
+          const wrapper = document.createElement('div');
+          wrapper.className = 'mermaid-wrap';
+          wrapper.dataset.zoom = '1';
+          wrapper.innerHTML = '<div class="mermaid-toolbar"><button type="button" data-zoom="out" title="Zoom out" aria-label="Zoom out">-</button><span class="mermaid-zoom-label">100%</span><button type="button" data-zoom="in" title="Zoom in" aria-label="Zoom in">+</button><button type="button" data-zoom="reset" title="Reset zoom" aria-label="Reset zoom">Reset</button></div>';
+          wrapper.appendChild(diagram);
+          code.parentElement.replaceWith(wrapper);
+          nodes.push(diagram);
+        });
+
+        try {
+          await mermaid.run({ nodes });
+        } catch (error) {
+          console.error('Mermaid rendering failed:', error);
+        }
+      }
+
+      function openSelectionDb() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(SELECTION_DB, 1);
+          request.onupgradeneeded = () => request.result.createObjectStore(SELECTION_STORE);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async function saveLastSelection(selection) {
+        const db = await openSelectionDb();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(SELECTION_STORE, 'readwrite');
+          tx.objectStore(SELECTION_STORE).put(selection, LAST_SELECTION_KEY);
+          tx.oncomplete = resolve;
+          tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+      }
+
+      async function readLastSelection() {
+        const db = await openSelectionDb();
+        const selection = await new Promise((resolve, reject) => {
+          const request = db.transaction(SELECTION_STORE).objectStore(SELECTION_STORE).get(LAST_SELECTION_KEY);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        db.close();
+        return selection || null;
+      }
+
+      function getSelectionHandles(selection) {
+        return selection.type === 'folder' ? [selection.handle] : selection.handles;
+      }
+
+      async function collectMarkdownEntries(dirHandle, prefix = '') {
+        const entries = [];
+        for await (const handle of dirHandle.values()) {
+          if (handle.kind === 'directory') {
+            if (!handle.name.startsWith('.')) {
+              entries.push(...(await collectMarkdownEntries(handle, `${prefix}${handle.name}/`)));
+            }
+          } else if (handle.name.toLowerCase().endsWith('.md')) {
+            entries.push({ name: `${prefix}${handle.name}`, handle });
+          }
+        }
+        return entries.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      async function loadSelection(selection) {
+        const entries = selection.type === 'folder'
+          ? await collectMarkdownEntries(selection.handle)
+          : selection.handles.map((handle) => ({ name: handle.name, handle }));
+
+        if (!entries.length) {
+          markdownView.innerHTML = '<p style="color: #b42318;">No Markdown files were found in the selection.</p>';
+          docTitle.textContent = 'No files selected';
+          return;
+        }
+
+        docs = entries;
+        renderFileList();
+        await loadDocument(docs[0]);
+      }
+
+      async function pickFolder() {
+        const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+        const selection = { type: 'folder', handle: dirHandle };
+        await saveLastSelection(selection);
+        await loadSelection(selection);
+      }
+
+      async function pickFiles() {
+        const handles = await window.showOpenFilePicker({
+          multiple: true,
+          types: [{ description: 'Markdown files', accept: { 'text/markdown': ['.md'] } }],
+        });
+        const selection = { type: 'files', handles };
+        await saveLastSelection(selection);
+        await loadSelection(selection);
+      }
+
+      async function runPicker(action) {
+        try {
+          await action();
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            markdownView.innerHTML = `<p style="color: #b42318;">The selection could not be opened: ${error.message}</p>`;
+          }
+        }
+      }
+
+      async function restoreLastSelection() {
+        const selection = await readLastSelection();
+        if (!selection) {
+          return false;
+        }
+
+        const permissionStates = await Promise.all(
+          getSelectionHandles(selection).map((handle) => handle.queryPermission({ mode: 'read' }))
+        );
+        if (permissionStates.every((state) => state === 'granted')) {
+          await loadSelection(selection);
+          return true;
+        }
+
+        reopenLastBtn.hidden = false;
+        docTitle.textContent = 'Reopen your last selection';
+        markdownView.innerHTML = '<p>Click "Reopen last selection" to continue.</p>';
+        return true;
+      }
+
+      function findDocument(path) {
+        const normalizedPath = path.toLowerCase();
+        const exactMatch = docs.find((item) => (typeof item === 'string' ? item : item.name).toLowerCase() === normalizedPath);
+        if (exactMatch) {
+          return exactMatch;
+        }
+
+        const baseName = normalizedPath.replace(/^.*\//, '');
+        return docs.find((item) => getDisplayName(item).toLowerCase() === baseName) || null;
+      }
+
+      function addHeadingIds(container) {
+        container.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+          if (!heading.id) {
+            heading.id = heading.textContent.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+          }
+        });
+      }
+
+      async function loadDocument(file, hash = '') {
+        const key = typeof file === 'string' ? file : file.name;
+        selectedFile = key;
+        lastDocument = file;
+        docTitle.textContent = getDisplayName(file);
+        markdownView.innerHTML = '<p>Loading...</p>';
+        renderFileList();
+
+        try {
+          let markdown = '';
+
+          if (file.handle) {
+            markdown = await (await file.handle.getFile()).text();
+          } else if (file instanceof File) {
+            markdown = await file.text();
+          } else if (typeof file === 'string' && !isLocalFileMode) {
+            const response = await fetch(`./${file}`);
+            if (!response.ok) {
+              throw new Error(`Unable to load ${file}`);
+            }
+            markdown = await response.text();
+          } else {
+            throw new Error('This file cannot be loaded directly from the local file system. Please open a docs folder using the button above.');
+          }
+
+          const rawHtml = marked.parse(markdown, { breaks: true, gfm: true });
+          markdownView.innerHTML = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['target'] });
+          addHeadingIds(markdownView);
+          await renderMermaidBlocks(markdownView);
+          window.scrollTo(0, 0);
+          if (hash) {
+            document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
+          }
+        } catch (error) {
+          markdownView.innerHTML = `<p style="color: #b42318;">The file could not be loaded: ${error.message}</p>`;
+        }
+      }
+
+      async function loadFolderFiles(fileListInput) {
+        const files = Array.from(fileListInput.files || []).filter((file) => file.name.toLowerCase().endsWith('.md'));
+        fileListInput.value = '';
+
+        if (!files.length) {
+          markdownView.innerHTML = '<p style="color: #b42318;">No Markdown files were selected.</p>';
+          docTitle.textContent = 'No files selected';
+          return;
+        }
+
+        docs = files.sort((a, b) => a.name.localeCompare(b.name));
+        renderFileList();
+        await loadDocument(files[0]);
+      }
+
+      async function init() {
+        if (supportsFileSystemAccess && (await restoreLastSelection().catch(() => false))) {
+          return;
+        }
+        try {
+          if (isLocalFileMode) {
+            docTitle.textContent = 'Open a docs folder';
+            markdownView.innerHTML = '<p>Select a folder containing Markdown files to begin.</p>';
+            return;
+          }
+
+          const response = await fetch(manifestPath).catch(() => null);
+          if (!response || !response.ok) {
+            docTitle.textContent = 'Open a docs folder';
+            markdownView.innerHTML = '<p>Use Open in the left panel to choose a folder or Markdown files to begin.</p>';
+            return;
+          }
+
+          const manifest = await response.json();
+          docs = manifest || [];
+          if (!docs.length) {
+            throw new Error('No Markdown files were found in the docs index.');
+          }
+
+          renderFileList();
+          await loadDocument(docs[0]);
+        } catch (error) {
+          markdownView.innerHTML = `<p style="color: #b42318;">${error.message}</p>`;
+          docTitle.textContent = 'Documentation unavailable';
+        }
+      }
+
+      async function setTheme(theme) {
+        localStorage.setItem(THEME_KEY, theme);
+        applyTheme(theme);
+        if (lastDocument) {
+          const pane = document.querySelector('.content');
+          const scrollTop = pane.scrollTop;
+          await loadDocument(lastDocument);
+          pane.scrollTop = scrollTop;
+        }
+      }
+
+      themeButtons.forEach((button) => button.addEventListener('click', () => setTheme(button.dataset.themeOption)));
+
+      const MERMAID_ZOOM_MIN = 0.25;
+      const MERMAID_ZOOM_MAX = 3;
+      const MERMAID_ZOOM_STEP = 0.25;
+
+      markdownView.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-zoom]');
+        if (!button) {
+          return;
+        }
+
+        const wrapper = button.closest('.mermaid-wrap');
+        const current = Number(wrapper.dataset.zoom || 1);
+        let next = 1;
+        if (button.dataset.zoom === 'in') {
+          next = Math.min(MERMAID_ZOOM_MAX, current + MERMAID_ZOOM_STEP);
+        } else if (button.dataset.zoom === 'out') {
+          next = Math.max(MERMAID_ZOOM_MIN, current - MERMAID_ZOOM_STEP);
+        }
+
+        wrapper.dataset.zoom = String(next);
+        const svg = wrapper.querySelector('.mermaid svg');
+        if (svg) {
+          svg.style.maxWidth = 'none';
+          svg.style.width = `${Math.round(next * 100)}%`;
+        }
+        wrapper.querySelector('.mermaid').classList.toggle('is-zoomed', next > 1);
+        wrapper.querySelector('.mermaid-zoom-label').textContent = `${Math.round(next * 100)}%`;
+      });
+
+      let mermaidPan = null;
+
+      markdownView.addEventListener('pointerdown', (event) => {
+        const area = event.target.closest('.mermaid.is-zoomed');
+        if (!area || event.button !== 0) {
+          return;
+        }
+        mermaidPan = { area, x: event.clientX, y: event.clientY, left: area.scrollLeft, top: area.scrollTop };
+        area.classList.add('is-panning');
+        area.setPointerCapture(event.pointerId);
+      });
+
+      markdownView.addEventListener('pointermove', (event) => {
+        if (!mermaidPan) {
+          return;
+        }
+        mermaidPan.area.scrollLeft = mermaidPan.left - (event.clientX - mermaidPan.x);
+        mermaidPan.area.scrollTop = mermaidPan.top - (event.clientY - mermaidPan.y);
+      });
+
+      const endMermaidPan = () => {
+        if (!mermaidPan) {
+          return;
+        }
+        mermaidPan.area.classList.remove('is-panning');
+        mermaidPan = null;
+      };
+      markdownView.addEventListener('pointerup', endMermaidPan);
+      markdownView.addEventListener('pointercancel', endMermaidPan);
+
+      markdownView.addEventListener('click', async (event) => {
+        const link = event.target.closest('a[href]');
+        if (!link) {
+          return;
+        }
+
+        const href = link.getAttribute('href');
+        if (href.startsWith('#')) {
+          return;
+        }
+
+        const isAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(href);
+        const currentDocUrl = `https://docs.local/${selectedFile.split('/').map(encodeURIComponent).join('/')}`;
+        const url = new URL(href, currentDocUrl);
+        const targetPath = decodeURIComponent(url.pathname).replace(/^\//, '');
+        const doc = !isAbsolute && /\.md$/i.test(targetPath) ? findDocument(targetPath) : null;
+
+        event.preventDefault();
+        if (doc) {
+          await loadDocument(doc, url.hash);
+        } else {
+          window.open(link.href, '_blank', 'noopener,noreferrer');
+        }
+      });
+
+      const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+      const layout = document.querySelector('.layout');
+      toggleSidebarBtn.addEventListener('click', () => {
+        const collapsed = layout.classList.toggle('sidebar-collapsed');
+        toggleSidebarBtn.textContent = collapsed ? '\u00BB' : '\u00AB';
+        toggleSidebarBtn.title = collapsed ? 'Show files' : 'Hide files';
+        toggleSidebarBtn.setAttribute('aria-expanded', String(!collapsed));
+      });
+
+      loadFolderBtn.addEventListener('click', () => (supportsFileSystemAccess ? runPicker(pickFolder) : filePicker.click()));
+      filePicker.addEventListener('change', () => loadFolderFiles(filePicker));
+      openBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const willOpen = openMenu.hidden;
+        openMenu.hidden = !willOpen;
+        openBtn.setAttribute('aria-expanded', String(willOpen));
+      });
+
+      document.addEventListener('click', () => {
+        openMenu.hidden = true;
+        openBtn.setAttribute('aria-expanded', 'false');
+      });
+
+      loadFileBtn.addEventListener('click', () => (supportsFileSystemAccess ? runPicker(pickFiles) : filePickerFile.click()));
+      reopenLastBtn.addEventListener('click', () => runPicker(async () => {
+        const selection = await readLastSelection();
+        for (const handle of getSelectionHandles(selection)) {
+          if ((await handle.requestPermission({ mode: 'read' })) !== 'granted') {
+            throw new Error('Read permission was not granted.');
+          }
+        }
+        reopenLastBtn.hidden = true;
+        await loadSelection(selection);
+      }));
+      filePickerFile.addEventListener('change', () => loadFolderFiles(filePickerFile));
+      searchInput.addEventListener('input', renderFileList);
+      init();
+    </script>
+  </body>
+</html>
