@@ -9,6 +9,7 @@ A lightweight, browser-based Markdown reader. Open the page, choose a folder or 
 - Mermaid diagram rendering with zoom and drag-to-pan
 - Light, dark, and paper reading themes
 - Remembers your last selection (Chromium-based browsers)
+- Auto-refreshes the open file when it changes on disk (Chromium-based browsers)
 - Collapsible file list with search
 
 ## Usage

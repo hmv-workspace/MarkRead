@@ -823,6 +823,51 @@
         });
       }
 
+      async function renderMarkdown(markdown) {
+        const rawHtml = marked.parse(markdown, { breaks: true, gfm: true });
+        markdownView.innerHTML = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['target'] });
+        addHeadingIds(markdownView);
+        await renderMermaidBlocks(markdownView);
+      }
+
+      const FILE_WATCH_INTERVAL_MS = 1500;
+      let watchIntervalId = null;
+      let watchedHandle = null;
+      let watchedLastModified = null;
+
+      function stopFileWatch() {
+        clearInterval(watchIntervalId);
+        watchIntervalId = null;
+        watchedHandle = null;
+        watchedLastModified = null;
+      }
+
+      function startFileWatch(handle, lastModified) {
+        stopFileWatch();
+        watchedHandle = handle;
+        watchedLastModified = lastModified;
+        watchIntervalId = setInterval(refreshIfChanged, FILE_WATCH_INTERVAL_MS);
+      }
+
+      async function refreshIfChanged() {
+        if (!watchedHandle) {
+          return;
+        }
+        try {
+          const fsFile = await watchedHandle.getFile();
+          if (fsFile.lastModified === watchedLastModified) {
+            return;
+          }
+          watchedLastModified = fsFile.lastModified;
+          const pane = document.querySelector('.content');
+          const scrollTop = pane.scrollTop;
+          await renderMarkdown(await fsFile.text());
+          pane.scrollTop = scrollTop;
+        } catch (error) {
+          console.error('Auto-refresh failed:', error);
+        }
+      }
+
       async function loadDocument(file, hash = '') {
         const key = typeof file === 'string' ? file : file.name;
         selectedFile = key;
@@ -835,28 +880,31 @@
           let markdown = '';
 
           if (file.handle) {
-            markdown = await (await file.handle.getFile()).text();
+            const fsFile = await file.handle.getFile();
+            markdown = await fsFile.text();
+            startFileWatch(file.handle, fsFile.lastModified);
           } else if (file instanceof File) {
+            stopFileWatch();
             markdown = await file.text();
           } else if (typeof file === 'string' && !isLocalFileMode) {
+            stopFileWatch();
             const response = await fetch(`./${file}`);
             if (!response.ok) {
               throw new Error(`Unable to load ${file}`);
             }
             markdown = await response.text();
           } else {
+            stopFileWatch();
             throw new Error('This file cannot be loaded directly from the local file system. Please open a docs folder using the button above.');
           }
 
-          const rawHtml = marked.parse(markdown, { breaks: true, gfm: true });
-          markdownView.innerHTML = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['target'] });
-          addHeadingIds(markdownView);
-          await renderMermaidBlocks(markdownView);
+          await renderMarkdown(markdown);
           window.scrollTo(0, 0);
           if (hash) {
             document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
           }
         } catch (error) {
+          stopFileWatch();
           markdownView.innerHTML = `<p style="color: #b42318;">The file could not be loaded: ${error.message}</p>`;
         }
       }
