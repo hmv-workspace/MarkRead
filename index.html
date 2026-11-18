@@ -624,6 +624,8 @@
       .layout.sidebar-collapsed .sidebar {
         padding: 20px 6px;
         overflow: hidden;
+        justify-content: flex-end;
+        cursor: pointer;
       }
 
       .layout.sidebar-collapsed .sidebar-header,
@@ -1457,12 +1459,25 @@
       });
 
       const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+      const sidebar = document.querySelector('.sidebar');
       const layout = document.querySelector('.layout');
-      toggleSidebarBtn.addEventListener('click', () => {
-        const collapsed = layout.classList.toggle('sidebar-collapsed');
+
+      function setSidebarCollapsed(collapsed) {
+        layout.classList.toggle('sidebar-collapsed', collapsed);
         toggleSidebarBtn.textContent = collapsed ? '\u00BB' : '\u00AB';
         toggleSidebarBtn.title = collapsed ? 'Show files' : 'Hide files';
         toggleSidebarBtn.setAttribute('aria-expanded', String(!collapsed));
+      }
+
+      toggleSidebarBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setSidebarCollapsed(!layout.classList.contains('sidebar-collapsed'));
+      });
+
+      sidebar.addEventListener('click', () => {
+        if (layout.classList.contains('sidebar-collapsed')) {
+          setSidebarCollapsed(false);
+        }
       });
 
       loadFolderBtn.addEventListener('click', () => (supportsFileSystemAccess ? runPicker(pickFolder) : filePicker.click()));
