@@ -226,6 +226,24 @@
       .markdown-body > :first-child { margin-top: 0; }
       .markdown-body > :last-child { margin-bottom: 0; }
 
+      .markdown-body.is-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50vh;
+        text-align: center;
+      }
+
+      .markdown-body.is-placeholder p {
+        max-width: 420px;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .markdown-body.is-placeholder p.placeholder-error {
+        color: #b42318;
+      }
+
       .markdown-body h1,
       .markdown-body h2,
       .markdown-body h3,
@@ -580,7 +598,7 @@
 
       .open-menu-list {
         position: absolute;
-        top: calc(100% + 4px);
+        bottom: calc(100% + 4px);
         left: 0;
         right: 0;
         z-index: 10;
@@ -1084,7 +1102,7 @@
 
         if (!entries.length) {
           clearToc();
-          markdownView.innerHTML = '<p style="color: #b42318;">No Markdown files were found in the selection.</p>';
+          setPlaceholder('No Markdown files were found in the selection.', { error: true });
           docTitle.textContent = 'No files selected';
           return;
         }
@@ -1117,7 +1135,7 @@
         } catch (error) {
           if (error.name !== 'AbortError') {
             clearToc();
-            markdownView.innerHTML = `<p style="color: #b42318;">The selection could not be opened: ${error.message}</p>`;
+            setPlaceholder(`The selection could not be opened: ${error.message}`, { error: true });
           }
         }
       }
@@ -1138,7 +1156,7 @@
 
         reopenLastBtn.hidden = false;
         docTitle.textContent = 'Reopen your last selection';
-        markdownView.innerHTML = '<p>Click "Reopen last selection" to continue.</p>';
+        setPlaceholder('Click "Reopen last selection" to continue.');
         return true;
       }
 
@@ -1226,7 +1244,13 @@
         setTimeout(() => { button.textContent = 'Copy'; }, 1500);
       });
 
+      function setPlaceholder(html, { error = false } = {}) {
+        markdownView.classList.add('is-placeholder');
+        markdownView.innerHTML = `<p class="${error ? 'placeholder-error' : ''}">${html}</p>`;
+      }
+
       async function renderMarkdown(markdown) {
+        markdownView.classList.remove('is-placeholder');
         const rawHtml = marked.parse(markdown, { breaks: true, gfm: true });
         markdownView.innerHTML = DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['target'] });
         addHeadingIds(markdownView);
@@ -1278,7 +1302,7 @@
         selectedFile = key;
         lastDocument = file;
         docTitle.textContent = getDisplayName(file);
-        markdownView.innerHTML = '<p>Loading...</p>';
+        setPlaceholder('Loading...');
         renderFileList();
 
         try {
@@ -1311,7 +1335,7 @@
         } catch (error) {
           stopFileWatch();
           clearToc();
-          markdownView.innerHTML = `<p style="color: #b42318;">The file could not be loaded: ${error.message}</p>`;
+          setPlaceholder(`The file could not be loaded: ${error.message}`, { error: true });
         }
       }
 
@@ -1321,7 +1345,7 @@
 
         if (!files.length) {
           clearToc();
-          markdownView.innerHTML = '<p style="color: #b42318;">No Markdown files were selected.</p>';
+          setPlaceholder('No Markdown files were selected.', { error: true });
           docTitle.textContent = 'No files selected';
           return;
         }
@@ -1338,14 +1362,14 @@
         try {
           if (isLocalFileMode) {
             docTitle.textContent = 'Open a docs folder';
-            markdownView.innerHTML = '<p>Select a folder containing Markdown files to begin.</p>';
+            setPlaceholder('Select a folder containing Markdown files to begin.');
             return;
           }
 
           const response = await fetch(manifestPath).catch(() => null);
           if (!response || !response.ok) {
             docTitle.textContent = 'Open a docs folder';
-            markdownView.innerHTML = '<p>Use Open in the left panel to choose a folder or Markdown files to begin.</p>';
+            setPlaceholder('Use Open in the left panel to choose a folder or Markdown files to begin.');
             return;
           }
 
@@ -1359,7 +1383,7 @@
           await loadDocument(docs[0]);
         } catch (error) {
           clearToc();
-          markdownView.innerHTML = `<p style="color: #b42318;">${error.message}</p>`;
+          setPlaceholder(error.message, { error: true });
           docTitle.textContent = 'Documentation unavailable';
         }
       }
