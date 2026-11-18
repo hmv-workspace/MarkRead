@@ -58,8 +58,13 @@
         --shadow: 0 4px 16px rgba(80, 60, 30, 0.12);
       }
 
-      [data-theme="paper"] .markdown-body {
+      [data-theme="paper"] .markdown-body,
+      [data-theme="paper"] .doc-header,
+      [data-theme="paper"] .toc-panel {
         font-family: Georgia, "Times New Roman", serif;
+      }
+
+      [data-theme="paper"] .markdown-body {
         font-size: 1.05rem;
       }
 
@@ -78,7 +83,7 @@
 
       .layout {
         display: grid;
-        grid-template-columns: 320px minmax(0, 1fr);
+        grid-template-columns: 260px minmax(0, 1fr);
         height: 100vh;
         overflow: hidden;
       }
@@ -105,7 +110,7 @@
         border-radius: 8px;
         background: var(--panel);
         color: var(--text);
-        margin-bottom: 16px;
+        margin-bottom: 10px;
       }
 
       .doc-list {
@@ -114,13 +119,16 @@
         margin: 0;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 2px;
       }
 
       .doc-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         width: 100%;
         text-align: left;
-        padding: 10px 12px;
+        padding: 7px 10px;
         border: 1px solid transparent;
         background: transparent;
         border-radius: 8px;
@@ -129,13 +137,26 @@
         transition: all 0.2s ease;
         font-size: 0.92rem;
         line-height: 1.35;
+      }
+
+      .doc-link-label {
         word-break: break-word;
+      }
+
+      .doc-link-icon {
+        flex-shrink: 0;
+        color: var(--muted);
       }
 
       .doc-link:hover,
       .doc-link.active {
         background: var(--accent-soft);
         border-color: var(--accent-border);
+        color: var(--accent);
+      }
+
+      .doc-link:hover .doc-link-icon,
+      .doc-link.active .doc-link-icon {
         color: var(--accent);
       }
 
@@ -177,7 +198,7 @@
       }
 
       .doc-header {
-        max-width: 760px;
+        max-width: 880px;
         margin: 0 auto 24px;
         padding: 20px 24px;
         background: var(--panel);
@@ -193,7 +214,7 @@
       }
 
       .markdown-body {
-        max-width: 760px;
+        max-width: 880px;
         margin: 0 auto;
         background: var(--panel);
         border: 1px solid var(--border);
@@ -316,13 +337,14 @@
         padding: 0;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 11px;
       }
 
       .toc-panel a {
         color: var(--muted);
         text-decoration: none;
         display: block;
+        line-height: 1.4;
         word-break: break-word;
       }
 
@@ -330,8 +352,17 @@
         color: var(--accent);
       }
 
-      .toc-panel .toc-level-2 { padding-left: 12px; }
-      .toc-panel .toc-level-3 { padding-left: 24px; }
+      .toc-panel .toc-level-1 a {
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .toc-panel .toc-level-2 { padding-left: 14px; }
+
+      .toc-panel .toc-level-3 {
+        padding-left: 28px;
+        font-size: 0.92em;
+      }
 
       .markdown-body table {
         width: 100%;
@@ -390,24 +421,18 @@
         border-top: 1px solid var(--border);
       }
 
-      .open-row {
+      .bottom-row {
         display: flex;
         align-items: center;
         gap: 6px;
       }
 
-      .open-row .open-menu {
+      .bottom-row .theme-group {
         flex: 1;
         min-width: 0;
       }
 
-      .open-row .action-btn {
-        height: 30px;
-        padding: 0 10px;
-        font-size: 0.85rem;
-      }
-
-      .open-row .sidebar-toggle {
+      .bottom-row .sidebar-toggle {
         width: 30px;
         height: 30px;
       }
@@ -415,23 +440,53 @@
       .sidebar-actions {
         display: flex;
         flex-direction: column;
+        gap: 6px;
+      }
+
+      .about-dialog {
+        width: min(90vw, 360px);
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel);
+        color: var(--text);
+        box-shadow: var(--shadow);
+      }
+
+      .about-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .about-dialog h2 {
+        margin: 0 0 8px;
+      }
+
+      .about-dialog p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .about-links {
+        list-style: none;
+        margin: 0 0 16px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
         gap: 8px;
-        margin-bottom: 12px;
       }
 
-      .credit {
-        margin: 10px 0 0;
-        font-size: 0.78rem;
-        color: var(--muted);
-        text-align: center;
-      }
-
-      .credit a {
-        color: var(--muted);
-      }
-
-      .credit a:hover {
+      .about-links a {
         color: var(--accent);
+        text-decoration: none;
+      }
+
+      .about-links a:hover {
+        text-decoration: underline;
+      }
+
+      .about-license {
+        font-size: 0.8rem;
       }
 
       .theme-group {
@@ -445,7 +500,7 @@
 
       .theme-btn {
         flex: 1;
-        height: 32px;
+        height: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -484,7 +539,7 @@
 
       .open-menu-list {
         position: absolute;
-        bottom: calc(100% + 4px);
+        top: calc(100% + 4px);
         left: 0;
         right: 0;
         z-index: 10;
@@ -577,7 +632,7 @@
       .layout.sidebar-collapsed .theme-group,
       .layout.sidebar-collapsed .open-menu,
       .layout.sidebar-collapsed .action-btn,
-      .layout.sidebar-collapsed .credit {
+      .layout.sidebar-collapsed .about-btn {
         display: none;
       }
 
@@ -586,11 +641,12 @@
         border-top: none;
       }
 
-      .layout.sidebar-collapsed .open-row {
+      .layout.sidebar-collapsed .bottom-row {
         justify-content: center;
       }
 
-      .markdown-body .mermaid {
+      .markdown-body .mermaid,
+      .mermaid-modal .mermaid {
         margin: 1em 0;
         text-align: center;
         overflow: auto;
@@ -635,16 +691,60 @@
         color: var(--muted);
       }
 
-      .markdown-body .mermaid.is-zoomed {
+      .markdown-body .mermaid.is-zoomed,
+      .mermaid-modal .mermaid.is-zoomed {
         cursor: grab;
       }
 
-      .markdown-body .mermaid.is-panning {
+      .markdown-body .mermaid.is-panning,
+      .mermaid-modal .mermaid.is-panning {
         cursor: grabbing;
         user-select: none;
       }
 
-      .markdown-body .mermaid svg {
+      .mermaid-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 1000;
+      }
+
+      .mermaid-modal {
+        width: min(94vw, 1400px);
+        height: min(90vh, 900px);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--panel);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .mermaid-modal .mermaid-toolbar {
+        margin-bottom: 0;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .mermaid-modal .mermaid {
+        flex: 1;
+        min-height: 0;
+        margin: 0;
+        padding: 16px;
+      }
+
+      .mermaid-modal-close {
+        font-size: 1rem;
+        line-height: 1;
+      }
+
+      .markdown-body .mermaid svg,
+      .mermaid-modal .mermaid svg {
         max-width: 100%;
         height: auto;
       }
@@ -693,34 +793,40 @@
         <div class="sidebar-footer">
           <input id="searchInput" class="search" type="search" placeholder="Filter files..." aria-label="Filter docs" />
         <div class="sidebar-actions">
-          <div class="theme-group" role="group" aria-label="Theme">
-            <button type="button" class="theme-btn" data-theme-option="light" title="Light theme" aria-label="Light theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
-            <button type="button" class="theme-btn" data-theme-option="dark" title="Dark theme" aria-label="Dark theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
-            <button type="button" class="theme-btn" data-theme-option="paper" title="Paper theme" aria-label="Paper theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg></button>
-          </div>
           <input id="filePicker" type="file" accept=".md, text/markdown" multiple webkitdirectory style="display: none;" />
           <input id="filePickerFile" type="file" accept=".md, text/markdown" multiple style="display: none;" />
-          <div class="open-row">
           <div class="open-menu">
-            <button id="openBtn" type="button" class="action-btn" aria-haspopup="true" aria-expanded="false">Open...</button>
+            <button id="openBtn" type="button" class="action-btn" aria-haspopup="true" aria-expanded="false">Open Markdown file(s) or folder</button>
             <div id="openMenu" class="open-menu-list" hidden>
               <button id="loadFolderBtn" type="button" class="menu-item">Folder</button>
               <button id="loadFileBtn" type="button" class="menu-item">File(s)</button>
             </div>
           </div>
+          <div class="bottom-row">
+          <div class="theme-group" role="group" aria-label="Theme">
+            <button type="button" class="theme-btn" data-theme-option="light" title="Light theme" aria-label="Light theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
+            <button type="button" class="theme-btn" data-theme-option="dark" title="Dark theme" aria-label="Dark theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+            <button type="button" class="theme-btn" data-theme-option="paper" title="Paper theme" aria-label="Paper theme"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg></button>
+          </div>
+          <button id="aboutBtn" class="sidebar-toggle about-btn" type="button" aria-haspopup="dialog" title="About MarkRead" aria-label="About MarkRead"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
           <button id="toggleSidebarBtn" class="sidebar-toggle" type="button" aria-expanded="true" title="Hide files">&laquo;</button>
           </div>
           <button id="reopenLastBtn" type="button" class="action-btn" hidden>Reopen last selection</button>
-          <p class="credit">
-            <a href="https://github.com/hmv-workspace" target="_blank" rel="noopener noreferrer">hmv-workspace</a>
-            &middot;
-            <a href="https://github.com/hmv-workspace/MarkRead" target="_blank" rel="noopener noreferrer">Source</a>
-            &middot;
-            <a href="https://github.com/hmv-workspace/MarkRead/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
-          </p>
         </div>
         </div>
       </aside>
+
+      <dialog id="aboutDialog" class="about-dialog">
+        <h2>MarkRead</h2>
+        <p>A lightweight, browser-based Markdown reader. Your files are read locally in the browser and are never uploaded.</p>
+        <ul class="about-links">
+          <li><a href="https://github.com/hmv-workspace" target="_blank" rel="noopener noreferrer">hmv-workspace on GitHub</a></li>
+          <li><a href="https://github.com/hmv-workspace/MarkRead" target="_blank" rel="noopener noreferrer">Source code</a></li>
+          <li><a href="https://github.com/hmv-workspace/MarkRead/issues" target="_blank" rel="noopener noreferrer">Report an issue or suggestion</a></li>
+        </ul>
+        <p class="about-license">MIT License</p>
+        <button type="button" id="aboutCloseBtn" class="action-btn">Close</button>
+      </dialog>
 
       <main class="content">
         <div class="doc-column">
@@ -751,6 +857,9 @@
       const reopenLastBtn = document.getElementById('reopenLastBtn');
       const tocPanel = document.getElementById('tocPanel');
       const tocList = document.getElementById('tocList');
+      const aboutBtn = document.getElementById('aboutBtn');
+      const aboutDialog = document.getElementById('aboutDialog');
+      const aboutCloseBtn = document.getElementById('aboutCloseBtn');
       const supportsFileSystemAccess = typeof window.showDirectoryPicker === 'function' && typeof window.showOpenFilePicker === 'function';
       const SELECTION_DB = 'docs-markdown-viewer';
       const SELECTION_STORE = 'selections';
@@ -814,7 +923,10 @@
           const isSelected = key === selectedFile ? 'active' : '';
           return `
             <li>
-              <button class="doc-link ${isSelected}" data-file="${key}">${label}</button>
+              <button class="doc-link ${isSelected}" data-file="${key}">
+                <svg class="doc-link-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="doc-link-label">${label}</span>
+              </button>
             </li>
           `;
         }).join('') || '<li><span style="color: var(--muted);">No files match.</span></li>';
@@ -842,7 +954,7 @@
           const wrapper = document.createElement('div');
           wrapper.className = 'mermaid-wrap';
           wrapper.dataset.zoom = '1';
-          wrapper.innerHTML = '<div class="mermaid-toolbar"><button type="button" data-zoom="out" title="Zoom out" aria-label="Zoom out">-</button><span class="mermaid-zoom-label">100%</span><button type="button" data-zoom="in" title="Zoom in" aria-label="Zoom in">+</button><button type="button" data-zoom="reset" title="Reset zoom" aria-label="Reset zoom">Reset</button></div>';
+          wrapper.innerHTML = '<div class="mermaid-toolbar"><button type="button" data-zoom="out" title="Zoom out" aria-label="Zoom out">-</button><span class="mermaid-zoom-label">100%</span><button type="button" data-zoom="in" title="Zoom in" aria-label="Zoom in">+</button><button type="button" data-zoom="reset" title="Reset zoom" aria-label="Reset zoom">Reset</button><button type="button" data-action="expand" title="View fullscreen" aria-label="View fullscreen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button></div>';
           wrapper.appendChild(diagram);
           code.parentElement.replaceWith(wrapper);
           nodes.push(diagram);
@@ -1206,7 +1318,7 @@
       const MERMAID_ZOOM_MAX = 3;
       const MERMAID_ZOOM_STEP = 0.25;
 
-      markdownView.addEventListener('click', (event) => {
+      document.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-zoom]');
         if (!button) {
           return;
@@ -1233,7 +1345,7 @@
 
       let mermaidPan = null;
 
-      markdownView.addEventListener('pointerdown', (event) => {
+      document.addEventListener('pointerdown', (event) => {
         const area = event.target.closest('.mermaid.is-zoomed');
         if (!area || event.button !== 0) {
           return;
@@ -1243,7 +1355,7 @@
         area.setPointerCapture(event.pointerId);
       });
 
-      markdownView.addEventListener('pointermove', (event) => {
+      document.addEventListener('pointermove', (event) => {
         if (!mermaidPan) {
           return;
         }
@@ -1258,8 +1370,66 @@
         mermaidPan.area.classList.remove('is-panning');
         mermaidPan = null;
       };
-      markdownView.addEventListener('pointerup', endMermaidPan);
-      markdownView.addEventListener('pointercancel', endMermaidPan);
+      document.addEventListener('pointerup', endMermaidPan);
+      document.addEventListener('pointercancel', endMermaidPan);
+
+      function closeMermaidModal() {
+        const overlay = document.querySelector('.mermaid-modal-overlay');
+        if (!overlay) {
+          return;
+        }
+        overlay.remove();
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', onMermaidModalKeydown);
+      }
+
+      function onMermaidModalKeydown(event) {
+        if (event.key === 'Escape') {
+          closeMermaidModal();
+        }
+      }
+
+      function openMermaidModal(sourceWrapper) {
+        const svg = sourceWrapper.querySelector('.mermaid svg');
+        if (!svg) {
+          return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'mermaid-modal-overlay';
+        overlay.innerHTML = `
+          <div class="mermaid-wrap mermaid-modal" data-zoom="1" role="dialog" aria-modal="true" aria-label="Diagram view">
+            <div class="mermaid-toolbar">
+              <button type="button" data-zoom="out" title="Zoom out" aria-label="Zoom out">-</button>
+              <span class="mermaid-zoom-label">100%</span>
+              <button type="button" data-zoom="in" title="Zoom in" aria-label="Zoom in">+</button>
+              <button type="button" data-zoom="reset" title="Reset zoom" aria-label="Reset zoom">Reset</button>
+              <button type="button" class="mermaid-modal-close" title="Close" aria-label="Close">&times;</button>
+            </div>
+            <div class="mermaid"></div>
+          </div>
+        `;
+
+        overlay.querySelector('.mermaid').appendChild(svg.cloneNode(true));
+        overlay.addEventListener('click', (event) => {
+          if (event.target === overlay) {
+            closeMermaidModal();
+          }
+        });
+        overlay.querySelector('.mermaid-modal-close').addEventListener('click', closeMermaidModal);
+
+        document.body.appendChild(overlay);
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', onMermaidModalKeydown);
+      }
+
+      markdownView.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-action="expand"]');
+        if (!button) {
+          return;
+        }
+        openMermaidModal(button.closest('.mermaid-wrap'));
+      });
 
       markdownView.addEventListener('click', async (event) => {
         const link = event.target.closest('a[href]');
@@ -1322,6 +1492,15 @@
       }));
       filePickerFile.addEventListener('change', () => loadFolderFiles(filePickerFile));
       searchInput.addEventListener('input', renderFileList);
+
+      aboutBtn.addEventListener('click', () => aboutDialog.showModal());
+      aboutCloseBtn.addEventListener('click', () => aboutDialog.close());
+      aboutDialog.addEventListener('click', (event) => {
+        if (event.target === aboutDialog) {
+          aboutDialog.close();
+        }
+      });
+
       init();
     </script>
   </body>
