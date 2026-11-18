@@ -323,6 +323,21 @@
         margin-bottom: 12px;
       }
 
+      .credit {
+        margin: 10px 0 0;
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .credit a {
+        color: var(--muted);
+      }
+
+      .credit a:hover {
+        color: var(--accent);
+      }
+
       .theme-group {
         display: flex;
         gap: 6px;
@@ -465,7 +480,8 @@
       .layout.sidebar-collapsed .search,
       .layout.sidebar-collapsed .theme-group,
       .layout.sidebar-collapsed .open-menu,
-      .layout.sidebar-collapsed .action-btn {
+      .layout.sidebar-collapsed .action-btn,
+      .layout.sidebar-collapsed .credit {
         display: none;
       }
 
@@ -589,6 +605,13 @@
           <button id="toggleSidebarBtn" class="sidebar-toggle" type="button" aria-expanded="true" title="Hide files">&laquo;</button>
           </div>
           <button id="reopenLastBtn" type="button" class="action-btn" hidden>Reopen last selection</button>
+          <p class="credit">
+            <a href="https://github.com/hmv-workspace" target="_blank" rel="noopener noreferrer">hmv-workspace</a>
+            &middot;
+            <a href="https://github.com/hmv-workspace/MarkRead" target="_blank" rel="noopener noreferrer">Source</a>
+            &middot;
+            <a href="https://github.com/hmv-workspace/MarkRead/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+          </p>
         </div>
         </div>
       </aside>
